@@ -161,6 +161,31 @@ add_iptables_rules() {
 		fi
 	done
 
+	# Force destination IP:PORT for IPv4 and IPv6
+	for entry in ${FORCED_DEST_IPV4_PORT}; do
+		proto=$(echo "$entry" | cut -d'-' -f1)
+		dest_ip=$(echo "$entry"   | cut -d'-' -f2)
+		dports=$(echo "$entry"    | cut -d'-' -f3)
+		if [ "$proto" = "both" ]; then
+			add_rule IPV4 mangle "PREROUTING -p tcp -d ${dest_ip} -m multiport --dports ${dports} -j MARK --set-xmark ${MARK}"
+			add_rule IPV4 mangle "PREROUTING -p udp -d ${dest_ip} -m multiport --dports ${dports} -j MARK --set-xmark ${MARK}"
+		else
+			add_rule IPV4 mangle "PREROUTING -p ${proto} -d ${dest_ip} -m multiport --dports ${dports} -j MARK --set-xmark ${MARK}"
+		fi
+	done
+
+	for entry in ${FORCED_DEST_IPV6_PORT}; do
+		proto=$(echo "$entry" | cut -d'-' -f1)
+		dest_ip=$(echo "$entry"   | cut -d'-' -f2)
+		dports=$(echo "$entry"    | cut -d'-' -f3)
+		if [ "$proto" = "both" ]; then
+			add_rule IPV6 mangle "PREROUTING -p tcp -d ${dest_ip} -m multiport --dports ${dports} -j MARK --set-xmark ${MARK}"
+			add_rule IPV6 mangle "PREROUTING -p udp -d ${dest_ip} -m multiport --dports ${dports} -j MARK --set-xmark ${MARK}"
+		else
+			add_rule IPV6 mangle "PREROUTING -p ${proto} -d ${dest_ip} -m multiport --dports ${dports} -j MARK --set-xmark ${MARK}"
+		fi
+	done
+
 	# Force source MAC:PORT
 	for entry in ${FORCED_SOURCE_MAC_PORT}; do
 		proto=$(echo "$entry" | cut -d'-' -f1)
@@ -237,6 +262,36 @@ add_iptables_rules() {
 			add_rule IPV6 mangle "PREROUTING -p udp -s ${source_ip} -m multiport --sports ${sports} -m mark --mark ${MARK} -j MARK --set-xmark 0x0"
 		else
 			add_rule IPV6 mangle "PREROUTING -p ${proto} -s ${source_ip} -m multiport --sports ${sports} -m mark --mark ${MARK} -j MARK --set-xmark 0x0"
+		fi
+	done
+
+	for entry in ${EXEMPT_DEST_IPV4_PORT}; do
+		proto=$(echo "$entry" | cut -d'-' -f1)
+		dest_ip=$(echo "$entry"   | cut -d'-' -f2)
+		dports=$(echo "$entry"    | cut -d'-' -f3)
+		if [ "$proto" = "both" ]; then
+			add_rule IPV4 mangle \
+				"PREROUTING -p tcp -d ${dest_ip} -m multiport --dports ${dports} -m mark --mark ${MARK} -j MARK --set-xmark 0x0"
+			add_rule IPV4 mangle \
+				"PREROUTING -p udp -d ${dest_ip} -m multiport --dports ${dports} -m mark --mark ${MARK} -j MARK --set-xmark 0x0"
+		else
+			add_rule IPV4 mangle \
+				"PREROUTING -p ${proto} -d ${dest_ip} -m multiport --dports ${dports} -m mark --mark ${MARK} -j MARK --set-xmark 0x0"
+		fi
+	done
+
+	for entry in ${EXEMPT_DEST_IPV6_PORT}; do
+		proto=$(echo "$entry" | cut -d'-' -f1)
+		dest_ip=$(echo "$entry"   | cut -d'-' -f2)
+		dports=$(echo "$entry"    | cut -d'-' -f3)
+		if [ "$proto" = "both" ]; then
+			add_rule IPV6 mangle \
+				"PREROUTING -p tcp -d ${dest_ip} -m multiport --dports ${dports} -m mark --mark ${MARK} -j MARK --set-xmark 0x0"
+			add_rule IPV6 mangle \
+				"PREROUTING -p udp -d ${dest_ip} -m multiport --dports ${dports} -m mark --mark ${MARK} -j MARK --set-xmark 0x0"
+		else
+			add_rule IPV6 mangle \
+				"PREROUTING -p ${proto} -d ${dest_ip} -m multiport --dports ${dports} -m mark --mark ${MARK} -j MARK --set-xmark 0x0"
 		fi
 	done
 
