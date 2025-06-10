@@ -15,6 +15,11 @@ FORCED_SOURCE_IPV4_PORT="tcp-192.168.1.1-22,32400,80:90,443,55555"
 FORCED_SOURCE_IPV6_PORT="tcp-2001:100a:d666:1a22::69-22,32400,80:90,443,55555"
 FORCED_SOURCE_MAC_PORT="both-00:ad:23:10:0a:30-22,32400,80,443,55555"
 
+# Format: [tcp/udp/both]-[IP/Destination]-[port1,port2:port3,port4,...]
+# Maximum 15 ports per entry.
+FORCED_DEST_IPV4_PORT="udp-0.0.0.0/0-3478:3489 udp-0.0.0.0/0-3490:3497 tcp-0.0.0.0/0-5223 udp-0.0.0.0/0-16384:16387,16393:16402"
+FORCED_DEST_IPV6_PORT="udp-::/0-3478:3489 udp-::/0-3490:3497 tcp-::/0-5223 udp-::/0-16384:16387,16393:16402"
+
 # Force these destinations through the VPN. 
 # These destinations will be forced regardless of source.
 # Format: [IP/nn]
@@ -39,6 +44,11 @@ EXEMPT_SOURCE_MAC="00:ad:23:10:0a:30"
 EXEMPT_SOURCE_IPV4_PORT="tcp-192.168.1.1-22,32400,80:90,443,55555"
 EXEMPT_SOURCE_IPV6_PORT="tcp-2001:100a:d666:1a22::69-22,32400,80:90,443,55555"
 EXEMPT_SOURCE_MAC_PORT="both-00:ad:23:10:0a:30-22,32400,80,443,55555"
+
+# Format: [tcp/udp/both]-[IP/MAC Source]-[port1,port2:port3,port4,...]
+# Maximum 15 ports per entry.
+EXEMPT_DEST_IPV4_PORT="tcp-0.0.0.0/0-80,443"
+EXEMPT_DEST_IPV6_PORT="tcp-::/0-80,443"
 
 # Exempt these destinations from the VPN. 
 # Format: [IP/nn]
