@@ -186,6 +186,31 @@ add_iptables_rules() {
 		fi
 	done
 
+ 	# Force destination ASN
+	SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+	PYHELPER="${SCRIPT_DIR}/asn2prefix.py"
+	ipset -! create "forced_asn_ipv4" hash:net family inet  hashsize 4096 maxelem 65536
+	ipset -! create "forced_asn_ipv6" hash:net family inet6 hashsize 4096 maxelem 65536
+	ipset flush "forced_asn_ipv4"
+	ipset flush "forced_asn_ipv6"
+
+	for ASN in ${FORCED_DEST_ASN}; do
+	    JSON="$(python2 "$PYHELPER" "$ASN")" || continue
+
+	    echo "$JSON" | jq -r '.ipv4[]' | while read -r P; do
+	        ipset -! add "forced_asn_ipv4" "$P"
+	    done
+
+	    echo "$JSON" | jq -r '.ipv6[]' | while read -r P; do
+	        ipset -! add "forced_asn_ipv6" "$P"
+	    done
+	done
+
+	add_rule IPV4 mangle \
+	    "PREROUTING -m set --match-set forced_asn_ipv4 dst -j MARK --set-xmark ${MARK}"
+	add_rule IPV6 mangle \
+	    "PREROUTING -m set --match-set forced_asn_ipv6 dst -j MARK --set-xmark ${MARK}"
+
 	# Force source MAC:PORT
 	for entry in ${FORCED_SOURCE_MAC_PORT}; do
 		proto=$(echo "$entry" | cut -d'-' -f1)
