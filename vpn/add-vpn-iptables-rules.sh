@@ -186,16 +186,14 @@ add_iptables_rules() {
 		fi
 	done
 
- 	# Force destination ASN
-	SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-	PYHELPER="${SCRIPT_DIR}/asn2prefix.py"
+	# Force destination ASN
 	ipset -! create "forced_asn_ipv4" hash:net family inet  hashsize 4096 maxelem 65536
 	ipset -! create "forced_asn_ipv6" hash:net family inet6 hashsize 4096 maxelem 65536
 	ipset flush "forced_asn_ipv4"
 	ipset flush "forced_asn_ipv6"
 
 	for ASN in ${FORCED_DEST_ASN}; do
-	    JSON="$(python2 "$PYHELPER" "$ASN")" || continue
+	    JSON="$(python2 /etc/split-vpn/vpn/asn2prefix.py "$ASN")" || continue
 
 	    echo "$JSON" | jq -r '.ipv4[]' | while read -r P; do
 	        ipset -! add "forced_asn_ipv4" "$P"
